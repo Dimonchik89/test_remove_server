@@ -108,6 +108,12 @@ export class FileGateway
     return response[0];
   }
 
+  async downloadFile(obj: { path: string[]; requestId: string }) {
+    console.log('downloadFile', obj);
+
+    await this.server.timeout(5000).emit('downloadFile', obj);
+  }
+
   @SubscribeMessage('file-chunk-data')
   handleFileChunk(@MessageBody() data: { requestId: string; chunk: Buffer }) {
     const response = this.pendingFiles.get(data.requestId);
@@ -117,6 +123,32 @@ export class FileGateway
 
   @SubscribeMessage('file-chunk-end')
   handleChunkEnd(@MessageBody() data: { requestId: string }) {
+    const response = this.pendingFiles.get(data.requestId);
+
+    if (!response) {
+      return;
+    }
+
+    response.end();
+
+    this.pendingFiles.delete(data.requestId);
+  }
+
+  @SubscribeMessage('download-file')
+  handleDownloadFile(
+    @MessageBody() data: { requestId: string; chunk: Buffer },
+  ) {
+    const response = this.pendingFiles.get(data.requestId);
+
+    if (!response) {
+      return;
+    }
+
+    response?.write(data.chunk);
+  }
+
+  @SubscribeMessage('download-file-end')
+  handleDownloadFileEnd(@MessageBody() data: { requestId: string }) {
     const response = this.pendingFiles.get(data.requestId);
 
     if (!response) {

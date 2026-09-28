@@ -35,18 +35,39 @@ export class FileController {
     return this.fileGateway.getDriveData(dto.path);
   }
 
-  @Get('*path')
+  @Get('download/*path')
+  async downloadFile(
+    @Param('path') filePath: string[],
+    @Res() response: Response,
+  ) {
+    const pathNorm = `/${filePath.join('/')}`;
+    const { size: totalSize } =
+      await this.fileGateway.getFileInformation(pathNorm);
+    const filename = filePath[filePath.length - 1];
+
+    response.setHeader(
+      'Content-Disposition',
+      `attachment; filename*=UTF-8''${encodeURIComponent(filename)}"`,
+    );
+    response.setHeader('Content-Length', `${totalSize}`);
+    response.setHeader('Content-Type', 'application/octet-stream');
+    response.flushHeaders();
+
+    const requestId = crypto.randomUUID();
+    this.fileGateway.pendingFiles.set(requestId, response);
+    this.fileGateway.downloadFile({ path: filePath, requestId });
+  }
+
+  @Get('stream/*path')
   async getFile(
     @Param('path') filePath: string[],
     @Res() response: Response,
     @Headers('range') range: string,
   ) {
     const pathNorm = `/${filePath.join('/')}`;
-    console.log('pathNorm', pathNorm);
 
     const { size: totalSize } =
       await this.fileGateway.getFileInformation(pathNorm);
-    console.log(totalSize);
 
     let start = 0;
     let end = totalSize - 1;
