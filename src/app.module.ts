@@ -8,6 +8,7 @@ import dbConfigProduction from './config/db.config.production.js';
 import dbConfig from './config/db.config.js';
 import { AuthModule } from './auth/auth.module.js';
 import { UserModule } from './user/user.module.js';
+import { DeviceModule } from './device/device.module.js';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { UserModule } from './user/user.module.js';
     }),
     AuthModule,
     UserModule,
+    DeviceModule,
   ],
   controllers: [AppController],
   providers: [AppService],

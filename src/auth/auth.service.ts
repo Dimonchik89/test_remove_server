@@ -56,6 +56,7 @@ export class AuthService {
       id: user.id,
       email: user.email,
     });
+
     await this.updateRefreshToken(user.id, refreshToken);
 
     return {

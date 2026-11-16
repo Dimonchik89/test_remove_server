@@ -1,4 +1,15 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  ManyToMany,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
+import { Device } from '../../device/entities/device.entity.js';
+import type { Relation } from 'typeorm';
 
 @Entity()
 export class User {
@@ -28,4 +39,16 @@ export class User {
 
   @Column({ type: 'timestamp', nullable: true })
   subscriptionCancelScheduledAt: Date | null;
+
+  @CreateDateColumn({ type: 'timestamp' })
+  createdAt: Date;
+
+  @UpdateDateColumn({ type: 'timestamp' })
+  updatedAt: Date;
+
+  @DeleteDateColumn()
+  deletedAt?: Date;
+
+  @OneToMany(() => Device, (device) => device.user)
+  devices: Relation<Device[]>;
 }
